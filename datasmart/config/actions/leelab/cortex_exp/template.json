@@ -23,7 +23,6 @@
     ]
   },
   "additional_parameters": {
-    "comment": "`additional_parameters` is free form JSON dictionary. you can put things like condition range, etc. here."
   },
-  "notes": "`notes` is freefrom text. You can paste multiline comment in ipython to convert all newlines to \\n"
+  "notes": ""
 }
