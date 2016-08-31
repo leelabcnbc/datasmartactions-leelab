@@ -1,8 +1,0 @@
-pymongo>=3.2.2
-nose
-jsonschema>=2.5.1
-rfc3987>=1.3.5
-strict-rfc3339>=0.6
-fake-factory
-jsl>=0.2.2
-pytz

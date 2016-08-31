@@ -20,11 +20,10 @@ install:
     - "mkdir -p ~/.ssh && chmod 700 ~/.ssh"
     - "ssh-keygen -t rsa -f ${HOME}/.ssh/id_rsa -q -P \"\""
     - "cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys"
-    - "pip install -r requirements.txt"
+    - "cd ~ && git clone https://github.com/leelabcnbc/datasmart.git"  # install latest datasmart.
+    - "pip install -r ~/datasmart/requirements.txt"
     - pip install coveralls
     - pip install codecov
-    - "cd ~ && git clone https://github.com/leelabcnbc/datasmart.git"  # install latest datasmart.
-    - "cd ~/datasmart && git checkout namespaced"
     - "cd ${TRAVIS_BUILD_DIR}"
 # command to run tests
 before_script:
