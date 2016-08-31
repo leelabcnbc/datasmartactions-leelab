@@ -95,7 +95,7 @@ class LeelabCortexExpSortedAction(unittest.TestCase):
         self.sacbatch_output_file = os.path.join(self.__class__.local_save_dir, 'sacbatch_output')
 
         self.class_identifier = self.action.class_identifier
-        self.files_to_cleanup = [self.savepath, 'query_template.py', 'prepare_result.p',
+        self.files_to_cleanup = [self.savepath, self.action.prepare_result_name, self.action.query_template_name,
                                  self.system_info_file, self.sacbatch_output_file] + \
                                 [os.path.join(self.__class__.local_save_dir, os.path.basename(x)) for x in
                                  self.filelist_nev]
@@ -240,7 +240,7 @@ doc = client_instance['temp']['temp'].find_one(query_doc)
 result = doc
             """.format(str(instance.temp_dict['old_result']['_id']))
 
-            with open("query_template.py", "wt") as f:
+            with open(instance.action.query_template_name, "wt") as f:
                 f.write(query_template_mock)
         elif prompt.startswith("{} Step 2.1".format(instance.class_identifier)):
             with open(instance.action.config['savepath'], 'rt') as f_old:

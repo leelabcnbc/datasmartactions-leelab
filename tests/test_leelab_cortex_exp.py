@@ -118,7 +118,7 @@ class LeelabCortexExpAction(unittest.TestCase):
                                                       'savepath': self.savepath},
                                                      {'git': self.git_mock_info})
         self.class_identifier = self.action.class_identifier
-        self.files_to_cleanup = [self.savepath, 'query_template.py', 'prepare_result.p']
+        self.files_to_cleanup = [self.savepath, self.action.prepare_result_name, self.action.query_template_name]
 
         for file in self.files_to_cleanup:
             self.assertFalse(os.path.exists(file))
