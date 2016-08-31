@@ -1,18 +1,21 @@
-import unittest
-from datasmart.actions.leelab.cortex_exp_sorted import CortexExpSortedAction, CortexExpSortedSchemaJSL, sort_people
-import os
-import json
-from functools import partial
-import random
-from datasmart.core.util import joinpath_norm
 import getpass
-from datasmart.core import schemautil
-from datasmart.core import util
+import json
+import os
+import random
+import unittest
+from copy import deepcopy
+from functools import partial
+
 import strict_rfc3339
 from bson import ObjectId
-from copy import deepcopy
 
-from tests.test_util import mock_util, env_util, file_util
+
+from datasmart.actions.leelab.cortex_exp_sorted import CortexExpSortedAction, CortexExpSortedSchemaJSL, sort_people
+from datasmart.core import schemautil
+from datasmart.core import util
+from datasmart.core.util import joinpath_norm
+from datasmart.test_util import env_util
+from datasmart.test_util import mock_util, file_util
 
 
 class LeelabCortexExpSortedAction(unittest.TestCase):
