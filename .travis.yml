@@ -1,0 +1,37 @@
+services:
+  - mongodb
+
+addons:
+  ssh_known_hosts:
+    - 127.0.0.1
+    - localhost
+  apt:
+    packages:
+    - openssh-server
+
+language: python
+python:
+  - "3.5"
+os:
+  - linux
+#  - osx   # remove this since travis doesn't support osx for Python 3.5
+# command to install dependencies
+install:
+    - "mkdir -p ~/.ssh && chmod 700 ~/.ssh"
+    - "ssh-keygen -t rsa -f ${HOME}/.ssh/id_rsa -q -P \"\""
+    - "cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys"
+    - "pip install -r requirements.txt"
+    - pip install coveralls
+    - pip install codecov
+    - "cd ~ && git clone https://github.com/leelabcnbc/datasmart.git"  # install latest datasmart.
+    - "cd ~/datasmart && git checkout namespaced"
+    - "cd ${TRAVIS_BUILD_DIR}"
+# command to run tests
+before_script:
+  - sleep 5   # for mongo. see <https://docs.travis-ci.com/user/database-setup/#MongoDB>
+  - cd tests
+  - export PYTHONPATH=$PYTHONPATH:$(pwd)/..:${HOME}/datasmart
+script: coverage run --branch --source=datasmart -m unittest discover
+after_success:
+  - coveralls
+  - codecov
