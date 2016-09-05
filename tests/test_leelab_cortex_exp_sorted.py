@@ -9,11 +9,13 @@ from functools import partial
 import strict_rfc3339
 from bson import ObjectId
 
-
+import datasmart.core.util.config
+import datasmart.core.util.datetime
+import datasmart.core.util.git
+import datasmart.core.util.path
 from datasmart.actions.leelab.cortex_exp_sorted import CortexExpSortedAction, CortexExpSortedSchemaJSL, sort_people
 from datasmart.core import schemautil
-from datasmart.core import util
-from datasmart.core.util import joinpath_norm
+from datasmart.core.util.path import joinpath_norm
 from datasmart.test_util import env_util
 from datasmart.test_util import mock_util, file_util
 
@@ -22,7 +24,7 @@ class LeelabCortexExpSortedAction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # check git is clean
-        util.check_git_repo_clean()
+        datasmart.core.util.git.check_git_repo_clean()
         # link to pymongo
         cls.collection_raw_key = ('temp', 'temp')
         env_util.setup_db(cls, [CortexExpSortedAction.table_path, cls.collection_raw_key])
@@ -30,7 +32,7 @@ class LeelabCortexExpSortedAction(unittest.TestCase):
 
     def setUp(self):
         # check git is clean
-        util.check_git_repo_clean()
+        datasmart.core.util.git.check_git_repo_clean()
         self.mock_function = partial(LeelabCortexExpSortedAction.input_mock_function, instance=self)
 
     def generate_files_for_sacbatch_and_spikesort(self):
@@ -42,7 +44,7 @@ class LeelabCortexExpSortedAction(unittest.TestCase):
 
     def get_new_instance(self):
         # check git is clean
-        util.check_git_repo_clean()
+        datasmart.core.util.git.check_git_repo_clean()
         assert not os.path.exists("config")
         os.makedirs("config/core/filetransfer")
         self.dirs_to_cleanup = file_util.gen_unique_local_paths(1)  # 1 for git
@@ -141,12 +143,12 @@ class LeelabCortexExpSortedAction(unittest.TestCase):
         filelist_local = [os.path.basename(f) for f in self.temp_dict['correct_result']['files_to_sort']['filelist']]
         filelist_cell = ["'" + file + "'" for file in filelist_local]
         filelist_cell = "{" + ",".join(filelist_cell) + "}"
-        sacbatch_script = util.load_config(self.action.__class__.config_path, 'sacbatch_script.m', load_json=False)
-        spikesort_script = util.load_config(self.action.__class__.config_path, 'spikesort_script.m', load_json=False)
+        sacbatch_script = datasmart.core.util.config.load_config(self.action.__class__.config_path, 'sacbatch_script.m', load_json=False)
+        spikesort_script = datasmart.core.util.config.load_config(self.action.__class__.config_path, 'spikesort_script.m', load_json=False)
         sacbatch_script = sacbatch_script.format(filelist_cell)
         spikesort_script = spikesort_script.format(filelist_cell)
-        main_script = util.load_config(self.action.__class__.config_path, 'sacbatch_and_spikesort_script.sh',
-                                       load_json=False)
+        main_script = datasmart.core.util.config.load_config(self.action.__class__.config_path, 'sacbatch_and_spikesort_script.sh',
+                                                             load_json=False)
 
         self.temp_dict['correct_result']['sort_config']['system_info'] = " ".join(file_util.fake.sentences())
         self.temp_dict['correct_result']['sort_config']['sacbatch_output'] = " ".join(file_util.fake.sentences())
@@ -169,21 +171,21 @@ class LeelabCortexExpSortedAction(unittest.TestCase):
         env_util.teardown_remote_site(self.site_raw)
         env_util.teardown_local_config()
         # check git is clean
-        util.check_git_repo_clean()
+        datasmart.core.util.git.check_git_repo_clean()
 
     def tearDown(self):
         # drop and then reset
         env_util.reset_db(self.__class__, [CortexExpSortedAction.table_path, self.__class__.collection_raw_key])
 
         # check git is clean
-        util.check_git_repo_clean()
+        datasmart.core.util.git.check_git_repo_clean()
 
     @classmethod
     def tearDownClass(cls):
         env_util.teardown_db(cls)
 
         # check git is clean
-        util.check_git_repo_clean()
+        datasmart.core.util.git.check_git_repo_clean()
 
 
     def test_insert_correct_stuff(self):
@@ -201,8 +203,9 @@ class LeelabCortexExpSortedAction(unittest.TestCase):
             computed_append_prefix = os.path.join('leelab', 'cortex_exp_sorted', str(result_id))
             correct_result['sorted_files']['site']['append_prefix'] = computed_append_prefix
 
-            correct_result['sorted_files']['filelist'] = [util.joinpath_norm(computed_append_prefix, f) for f in
-                                                          correct_result['sorted_files']['filelist']]
+            correct_result['sorted_files']['filelist'] = [
+                datasmart.core.util.path.joinpath_norm(computed_append_prefix, f) for f in
+                correct_result['sorted_files']['filelist']]
             correct_result['sorted_files']['filelist'] = [f for i, f in
                                                           enumerate(correct_result['sorted_files']['filelist'])
                                                           if (i in self.temp_dict['keep_file_idx'])]
@@ -251,7 +254,7 @@ result = doc
                                                        f.lower().endswith('.nev')]
             record_old['sort_person'] = instance.temp_dict['correct_result']['sort_person']
             record_old['notes'] = instance.temp_dict['correct_result']['notes']
-            instance.temp_dict['correct_result']['timestamp'] = util.rfc3339_to_datetime(record_old['timestamp'])
+            instance.temp_dict['correct_result']['timestamp'] = datasmart.core.util.datetime.rfc3339_to_datetime(record_old['timestamp'])
 
             with open(instance.action.config['savepath'], 'wt') as f_new:
                 json.dump(record_old, f_new)

@@ -1,18 +1,23 @@
 """DataSMART action for sorting raw cortex files"""
 
+import json
+import os.path
+import shutil
+import stat
+from collections import OrderedDict
+from copy import deepcopy
+
+import jsl
+from bson import ObjectId
+
+import datasmart.core.schemautil as schemautil
+import datasmart.core.util.config
+import datasmart.core.util.datetime
+import datasmart.core.util.git
+import datasmart.core.util.path
+from datasmart.actions.leelab.cortex_exp import CortexExpAction
 from datasmart.core.action import DBActionWithSchema, save_wait_and_load
 from datasmart.core.dbschema import DBSchema
-import jsl
-import datasmart.core.schemautil as schemautil
-from datasmart.actions.leelab.cortex_exp import CortexExpAction
-from datasmart.core import util
-from bson import ObjectId
-from collections import OrderedDict
-import json
-from copy import deepcopy
-import shutil
-import os.path
-import stat
 
 sort_methods = ['sacbatch_and_spikesort']
 sort_people = ["Ge Huang"]
@@ -46,7 +51,7 @@ class CortexExpSortedSchema(DBSchema):
 
     def post_process_record(self, record=None) -> dict:
         # convert string-based timestamp to actual Python ``datetime`` object
-        record['timestamp'] = util.rfc3339_to_datetime(record['timestamp'])
+        record['timestamp'] = datasmart.core.util.datetime.rfc3339_to_datetime(record['timestamp'])
         record['cortex_exp_ref'] = ObjectId(record['cortex_exp_ref'])
         return record
 
@@ -85,7 +90,7 @@ class CortexExpSortedAction(DBActionWithSchema):
             ('sort_method', sort_choice),
             ('sort_config', {}),
             ('sort_person', 'Ge Huang'),
-            ('timestamp', util.current_timestamp()),
+            ('timestamp', datasmart.core.util.datetime.current_timestamp()),
             ('notes', '')
         ])
         assert self.dbschema_instance.validate_record(record)
@@ -122,13 +127,13 @@ class CortexExpSortedAction(DBActionWithSchema):
         input('{} Step 2.3 the above files will be put into sorting. press enter to continue'.format(
             self.class_identifier))
 
-        sacbatch_script = util.load_config(self.__class__.config_path, 'sacbatch_script.m', load_json=False)
-        spikesort_script = util.load_config(self.__class__.config_path, 'spikesort_script.m', load_json=False)
+        sacbatch_script = datasmart.core.util.config.load_config(self.__class__.config_path, 'sacbatch_script.m', load_json=False)
+        spikesort_script = datasmart.core.util.config.load_config(self.__class__.config_path, 'spikesort_script.m', load_json=False)
 
         sacbatch_script = sacbatch_script.format(filelist_cell)
         spikesort_script = spikesort_script.format(filelist_cell)
 
-        main_script = util.load_config(self.__class__.config_path, 'sacbatch_and_spikesort_script.sh', load_json=False)
+        main_script = datasmart.core.util.config.load_config(self.__class__.config_path, 'sacbatch_and_spikesort_script.sh', load_json=False)
 
         with open(os.path.join(local_dir, 'sacbatch_script.m'), 'wt', encoding='utf-8') as f:
             f.write(sacbatch_script)
@@ -142,8 +147,8 @@ class CortexExpSortedAction(DBActionWithSchema):
         os.chmod(main_script_local, stat.S_IEXEC | os.stat(main_script_local).st_mode)
 
         # copy files
-        sacbatch_file = util.joinpath_norm('SAC_batch_summer.tar.gz')
-        spikesort_file = util.joinpath_norm('spikesort.tar.gz')
+        sacbatch_file = datasmart.core.util.path.joinpath_norm('SAC_batch_summer.tar.gz')
+        spikesort_file = datasmart.core.util.path.joinpath_norm('spikesort.tar.gz')
 
         shutil.copyfile(os.path.join(self.config['spike_sorting_software_repo_path'], sacbatch_file),
                         os.path.join(local_dir, 'SAC_batch.tar.gz'))
@@ -208,7 +213,7 @@ class CortexExpSortedAction(DBActionWithSchema):
         pass
 
     def generate_query_doc_template(self) -> str:
-        return util.load_config(self.__class__.config_path, 'query_template.py', load_json=False)
+        return datasmart.core.util.config.load_config(self.__class__.config_path, 'query_template.py', load_json=False)
 
     table_path = ('leelab', 'cortex_exp_sorted')
     config_path = ('actions', 'leelab', 'cortex_exp_sorted')
@@ -240,9 +245,9 @@ class CortexExpSortedAction(DBActionWithSchema):
     @staticmethod
     def normalize_config(config: dict) -> dict:
         spike_sorting_software_repo_path = config['spike_sorting_software_repo_path']
-        spike_sorting_software_repo_url = util.get_git_repo_url(spike_sorting_software_repo_path)
-        spike_sorting_software_repo_hash = util.get_git_repo_hash(spike_sorting_software_repo_path)
-        util.check_git_repo_clean(spike_sorting_software_repo_path)
+        spike_sorting_software_repo_url = datasmart.core.util.git.get_git_repo_url(spike_sorting_software_repo_path)
+        spike_sorting_software_repo_hash = datasmart.core.util.git.get_git_repo_hash(spike_sorting_software_repo_path)
+        datasmart.core.util.git.check_git_repo_clean(spike_sorting_software_repo_path)
         return {
             'spike_sorting_software_repo_url': spike_sorting_software_repo_url,
             'spike_sorting_software_repo_hash': spike_sorting_software_repo_hash,
