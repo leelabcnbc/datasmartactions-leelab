@@ -10,22 +10,24 @@ from subprocess import CalledProcessError
 import strict_rfc3339
 from jsonschema.exceptions import ValidationError
 
+import datasmart.core.util.datetime
+import datasmart.core.util.git
 from datasmart.actions.leelab.cortex_exp import CortexExpAction, CortexExpSchemaJSL, monkeylist
 from datasmart.core import schemautil
-from datasmart.core import util
 from datasmart.test_util import env_util
 from datasmart.test_util import mock_util, file_util
+
 
 class LeelabCortexExpAction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # check git is clean
-        util.check_git_repo_clean()
+        datasmart.core.util.git.check_git_repo_clean()
         env_util.setup_db(cls, [CortexExpAction.table_path])
 
     def setUp(self):
         # check git is clean
-        util.check_git_repo_clean()
+        datasmart.core.util.git.check_git_repo_clean()
         # I put setup here only to pass in reference to class for mock function.
         self.mock_function = partial(LeelabCortexExpAction.input_mock_function, instance=self)
         self.config_path = CortexExpAction.config_path
@@ -80,7 +82,7 @@ class LeelabCortexExpAction(unittest.TestCase):
 
     def get_new_instance(self):
         # check git is clean
-        util.check_git_repo_clean()
+        datasmart.core.util.git.check_git_repo_clean()
 
         filetransfer_config_text = """{{
             "local_data_dir": "_data",
@@ -134,19 +136,19 @@ class LeelabCortexExpAction(unittest.TestCase):
 
         env_util.teardown_local_config()
         # check git is clean
-        util.check_git_repo_clean()
+        datasmart.core.util.git.check_git_repo_clean()
 
     def tearDown(self):
         # drop and then reset
         env_util.reset_db(self.__class__, CortexExpAction.table_path)
         # check git is clean
-        util.check_git_repo_clean()
+        datasmart.core.util.git.check_git_repo_clean()
 
     @classmethod
     def tearDownClass(cls):
         env_util.teardown_db(cls)
         # check git is clean
-        util.check_git_repo_clean()
+        datasmart.core.util.git.check_git_repo_clean()
 
     def test_insert_wrong_stuff(self):
         wrong_types = ['missing field', 'wrong monkey',
@@ -212,7 +214,7 @@ class LeelabCortexExpAction(unittest.TestCase):
             record['additional_parameters'] = instance.temp_dict['correct_result']['additional_parameters']
             record['notes'] = instance.temp_dict['correct_result']['notes']
             record['monkey'] = instance.temp_dict['correct_result']['monkey']
-            instance.temp_dict['correct_result']['timestamp'] = util.rfc3339_to_datetime(record['timestamp'])
+            instance.temp_dict['correct_result']['timestamp'] = datasmart.core.util.datetime.rfc3339_to_datetime(record['timestamp'])
             wrong_type = instance.temp_dict['wrong_type']
             if wrong_type == 'correct':
                 pass

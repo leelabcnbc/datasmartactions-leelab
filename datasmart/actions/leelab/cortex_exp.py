@@ -24,14 +24,18 @@ Format of a database record for this action.
 
 """
 
-from datasmart.core.dbschema import DBSchema
-from datasmart.core import util
-from datasmart.core.action import ManualDBActionWithSchema
-import jsl
-from datasmart.core import schemautil
-import os.path
 import hashlib
+import os.path
 import re
+
+import jsl
+
+import datasmart.core.util.datetime
+import datasmart.core.util.git
+from datasmart.core import schemautil
+from datasmart.core.action import ManualDBActionWithSchema
+from datasmart.core.dbschema import DBSchema
+
 monkeylist = ["leo", "koko", "gabby", "frugo"]
 
 
@@ -74,13 +78,13 @@ class CortexExpSchema(DBSchema):
         # check git clean. I put it here for some mock related issues. Somehow putting git_hash under
         # CortexExpSchema doesn't work.
         # check
-        cortex_expt_repo_hash = util.get_git_repo_hash(self.config['repo_path'])
+        cortex_expt_repo_hash = datasmart.core.util.git.get_git_repo_hash(self.config['repo_path'])
         assert cortex_expt_repo_hash == record['code_repo']['repo_hash'], \
             'you may updated the repo after creating the template!'
-        util.check_git_repo_clean(self.config['repo_path'])
+        datasmart.core.util.git.check_git_repo_clean(self.config['repo_path'])
 
         # convert string-based timestamp to actual Python ``datetime`` object
-        record['timestamp'] = util.rfc3339_to_datetime(record['timestamp'])
+        record['timestamp'] = datasmart.core.util.datetime.rfc3339_to_datetime(record['timestamp'])
         # check the item files, condition files, and timing files.
         file_to_check_list = [record['timing_file_name'],
                               record['condition_file_name'],
@@ -103,7 +107,7 @@ class CortexExpSchema(DBSchema):
         return record
 
     def post_process_template(self, template: str) -> str:
-        template = template.replace("{{timestamp}}", util.current_timestamp())
+        template = template.replace("{{timestamp}}", datasmart.core.util.datetime.current_timestamp())
         template = template.replace("{{repo_url}}", self.config['repo_url'])
         template = template.replace("{{repo_hash}}", self.config['repo_hash'])
         return template
@@ -134,9 +138,9 @@ class CortexExpAction(ManualDBActionWithSchema):
 
     @staticmethod
     def normalize_config(config: dict) -> dict:
-        cortex_expt_repo_url = util.get_git_repo_url(config['cortex_expt_repo_path'])
-        cortex_expt_repo_hash = util.get_git_repo_hash(config['cortex_expt_repo_path'])
-        util.check_git_repo_clean(config['cortex_expt_repo_path'])
+        cortex_expt_repo_url = datasmart.core.util.git.get_git_repo_url(config['cortex_expt_repo_path'])
+        cortex_expt_repo_hash = datasmart.core.util.git.get_git_repo_hash(config['cortex_expt_repo_path'])
+        datasmart.core.util.git.check_git_repo_clean(config['cortex_expt_repo_path'])
         return {
             'cortex_expt_repo_url': cortex_expt_repo_url,
             'cortex_expt_repo_hash': cortex_expt_repo_hash,
