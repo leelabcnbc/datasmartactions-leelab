@@ -7,7 +7,6 @@ import unittest
 from functools import partial
 from subprocess import CalledProcessError
 
-import strict_rfc3339
 from jsonschema.exceptions import ValidationError
 
 import datasmart.core.util.datetime
@@ -186,7 +185,8 @@ class LeelabCortexExpAction(unittest.TestCase):
             # for key in correct_result: # this for loop for of assert is easy to debug.
             #     self.assertEqual(correct_result[key], result[key])
             self.assertEqual(correct_result, result)
-            result['timestamp'] = strict_rfc3339.timestamp_to_rfc3339_utcoffset(result['timestamp'].timestamp())
+            result['timestamp'] = datasmart.core.util.datetime.datetime_to_datetime_utc(result['timestamp'])
+            result['timestamp'] = datasmart.core.util.datetime.datetime_local_to_rfc3339_local(result['timestamp'])
             del result['timing_file_sha1']
             del result['item_file_sha1']
             del result['condition_file_sha1']
@@ -214,7 +214,8 @@ class LeelabCortexExpAction(unittest.TestCase):
             record['additional_parameters'] = instance.temp_dict['correct_result']['additional_parameters']
             record['notes'] = instance.temp_dict['correct_result']['notes']
             record['monkey'] = instance.temp_dict['correct_result']['monkey']
-            instance.temp_dict['correct_result']['timestamp'] = datasmart.core.util.datetime.rfc3339_to_datetime(record['timestamp'])
+            instance.temp_dict['correct_result']['timestamp'] = datasmart.core.util.datetime.rfc3339_to_datetime(
+                record['timestamp'])
             wrong_type = instance.temp_dict['wrong_type']
             if wrong_type == 'correct':
                 pass

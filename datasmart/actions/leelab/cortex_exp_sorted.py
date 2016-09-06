@@ -90,7 +90,7 @@ class CortexExpSortedAction(DBActionWithSchema):
             ('sort_method', sort_choice),
             ('sort_config', {}),
             ('sort_person', 'Ge Huang'),
-            ('timestamp', datasmart.core.util.datetime.current_timestamp()),
+            ('timestamp', datasmart.core.util.datetime.now_rfc3339_local()),
             ('notes', '')
         ])
         assert self.dbschema_instance.validate_record(record)

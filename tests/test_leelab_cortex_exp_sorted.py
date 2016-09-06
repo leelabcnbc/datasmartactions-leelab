@@ -6,7 +6,6 @@ import unittest
 from copy import deepcopy
 from functools import partial
 
-import strict_rfc3339
 from bson import ObjectId
 
 import datasmart.core.util.config
@@ -143,11 +142,14 @@ class LeelabCortexExpSortedAction(unittest.TestCase):
         filelist_local = [os.path.basename(f) for f in self.temp_dict['correct_result']['files_to_sort']['filelist']]
         filelist_cell = ["'" + file + "'" for file in filelist_local]
         filelist_cell = "{" + ",".join(filelist_cell) + "}"
-        sacbatch_script = datasmart.core.util.config.load_config(self.action.__class__.config_path, 'sacbatch_script.m', load_json=False)
-        spikesort_script = datasmart.core.util.config.load_config(self.action.__class__.config_path, 'spikesort_script.m', load_json=False)
+        sacbatch_script = datasmart.core.util.config.load_config(self.action.__class__.config_path, 'sacbatch_script.m',
+                                                                 load_json=False)
+        spikesort_script = datasmart.core.util.config.load_config(self.action.__class__.config_path,
+                                                                  'spikesort_script.m', load_json=False)
         sacbatch_script = sacbatch_script.format(filelist_cell)
         spikesort_script = spikesort_script.format(filelist_cell)
-        main_script = datasmart.core.util.config.load_config(self.action.__class__.config_path, 'sacbatch_and_spikesort_script.sh',
+        main_script = datasmart.core.util.config.load_config(self.action.__class__.config_path,
+                                                             'sacbatch_and_spikesort_script.sh',
                                                              load_json=False)
 
         self.temp_dict['correct_result']['sort_config']['system_info'] = " ".join(file_util.fake.sentences())
@@ -187,7 +189,6 @@ class LeelabCortexExpSortedAction(unittest.TestCase):
         # check git is clean
         datasmart.core.util.git.check_git_repo_clean()
 
-
     def test_insert_correct_stuff(self):
         for _ in range(20):  # used to be 100. but somehow that will make program fail for travis
             self.get_new_instance()
@@ -218,7 +219,8 @@ class LeelabCortexExpSortedAction(unittest.TestCase):
             files_uploaded_record = [os.path.basename(x) for x in result['sorted_files']['filelist']]
             self.assertEqual(sorted(files_uploaded), sorted(files_uploaded_record))
             result['cortex_exp_ref'] = str(result['cortex_exp_ref'])
-            result['timestamp'] = strict_rfc3339.timestamp_to_rfc3339_utcoffset(result['timestamp'].timestamp())
+            result['timestamp'] = datasmart.core.util.datetime.datetime_to_datetime_utc(result['timestamp'])
+            result['timestamp'] = datasmart.core.util.datetime.datetime_local_to_rfc3339_local(result['timestamp'])
             self.assertTrue(schemautil.validate(CortexExpSortedSchemaJSL.get_schema(), result))
             self.action.revoke()
             env_util.assert_not_found(self.__class__, [result_id], client_key=CortexExpSortedAction.table_path)
@@ -254,7 +256,8 @@ result = doc
                                                        f.lower().endswith('.nev')]
             record_old['sort_person'] = instance.temp_dict['correct_result']['sort_person']
             record_old['notes'] = instance.temp_dict['correct_result']['notes']
-            instance.temp_dict['correct_result']['timestamp'] = datasmart.core.util.datetime.rfc3339_to_datetime(record_old['timestamp'])
+            instance.temp_dict['correct_result']['timestamp'] = datasmart.core.util.datetime.rfc3339_to_datetime(
+                record_old['timestamp'])
 
             with open(instance.action.config['savepath'], 'wt') as f_new:
                 json.dump(record_old, f_new)

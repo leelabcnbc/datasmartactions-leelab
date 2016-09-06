@@ -107,7 +107,7 @@ class CortexExpSchema(DBSchema):
         return record
 
     def post_process_template(self, template: str) -> str:
-        template = template.replace("{{timestamp}}", datasmart.core.util.datetime.current_timestamp())
+        template = template.replace("{{timestamp}}", datasmart.core.util.datetime.now_rfc3339_local())
         template = template.replace("{{repo_url}}", self.config['repo_url'])
         template = template.replace("{{repo_hash}}", self.config['repo_hash'])
         return template
