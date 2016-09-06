@@ -21,6 +21,7 @@ install:
     - "ssh-keygen -t rsa -f ${HOME}/.ssh/id_rsa -q -P \"\""
     - "cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys"
     - "cd ~ && git clone https://github.com/leelabcnbc/datasmart.git"  # install latest datasmart.
+    - "cd datasmart && git checkout demo_actions"
     - "pip install -r ~/datasmart/requirements.txt"
     - pip install coveralls
     - pip install codecov
