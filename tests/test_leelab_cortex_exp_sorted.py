@@ -17,11 +17,14 @@ from datasmart.core import schemautil
 from datasmart.core.util.path import joinpath_norm
 from datasmart.test_util import env_util
 from datasmart.test_util import mock_util, file_util
+import datasmart.test_util
 
 
 class LeelabCortexExpSortedAction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        # reset seed
+        datasmart.test_util.reseed(0)
         # check git is clean
         datasmart.core.util.git.check_git_repo_clean()
         # link to pymongo

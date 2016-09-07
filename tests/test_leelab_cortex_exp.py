@@ -15,11 +15,13 @@ from datasmart.actions.leelab.cortex_exp import CortexExpAction, CortexExpSchema
 from datasmart.core import schemautil
 from datasmart.test_util import env_util
 from datasmart.test_util import mock_util, file_util
-
+import datasmart.test_util
 
 class LeelabCortexExpAction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        # reset seed
+        datasmart.test_util.reseed(0)
         # check git is clean
         datasmart.core.util.git.check_git_repo_clean()
         env_util.setup_db(cls, [CortexExpAction.table_path])
