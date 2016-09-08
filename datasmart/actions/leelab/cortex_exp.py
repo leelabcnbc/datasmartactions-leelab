@@ -82,6 +82,9 @@ class CortexExpSchema(DBSchema):
         assert cortex_expt_repo_hash == record['code_repo']['repo_hash'], \
             'you may updated the repo after creating the template!'
         datasmart.core.util.git.check_git_repo_clean(self.config['repo_path'])
+        # check that this commit is already in the remote.
+        assert datasmart.core.util.git.check_commit_in_remote(self.config['repo_path'],
+                                                              cortex_expt_repo_hash), 'you must push the commit first'
 
         # convert string-based timestamp to actual Python ``datetime`` object
         record['timestamp'] = datasmart.core.util.datetime.rfc3339_to_datetime(record['timestamp'])
