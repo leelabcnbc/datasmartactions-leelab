@@ -4,7 +4,7 @@ from sys import argv
 import os
 import json
 
-from datasmartleelabutil import check_folder_format_date
+from datasmartleelabutil.cortex_exp import check_folder_format_date, files_to_ignore
 
 
 def convert_new_folder_name(dir_list):
@@ -29,6 +29,7 @@ def main(root_folder):
 
     """
     dir_list = os.listdir(root_folder)
+    dir_list = [x for x in dir_list if x not in files_to_ignore]
     for x in dir_list:
         assert check_folder_format_date(x)
 
