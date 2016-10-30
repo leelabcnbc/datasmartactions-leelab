@@ -4,7 +4,13 @@ from sys import argv
 import os
 import json
 
-from datasmartleelabutil.cortex_exp import check_folder_format_date, files_to_ignore
+files_to_ignore = {'.DS_Store'}
+def check_folder_format_date_naive(x):
+    """this is for my master script"""
+    assert len(x) == 8, 'each folder name must be length 8, and {} is not'.format(x)
+    for x_digit in x:
+        assert x_digit in '0123456789', 'each folder name must contain only digits'
+    return True
 
 
 def convert_new_folder_name(dir_list):
@@ -31,7 +37,7 @@ def main(root_folder):
     dir_list = os.listdir(root_folder)
     dir_list = [x for x in dir_list if x not in files_to_ignore]
     for x in dir_list:
-        assert check_folder_format_date(x)
+        assert check_folder_format_date_naive(x)
 
     # ok, for each one, compute the switched version.
     result_dict = convert_new_folder_name(dir_list)

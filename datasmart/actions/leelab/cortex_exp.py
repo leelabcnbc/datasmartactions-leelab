@@ -27,6 +27,7 @@ Format of a database record for this action.
 import hashlib
 import os.path
 import re
+import datetime
 
 import jsl
 
@@ -36,7 +37,11 @@ from datasmart.core import schemautil
 from datasmart.core.action import ManualDBActionWithSchema
 from datasmart.core.dbschema import DBSchema
 
-monkeylist = ["leo", "koko", "gabby", "frugo"]
+monkey_name_mapping = {
+    'leo': 'LE', 'gabby': 'GA', 'frugo': 'FR', 'koko': 'KO'
+}
+
+monkeylist = list(monkey_name_mapping.keys())
 
 
 class CortexExpSchemaJSL(jsl.Document):
@@ -44,6 +49,7 @@ class CortexExpSchemaJSL(jsl.Document):
     schema_revision = jsl.IntField(enum=[1], required=True)  # the version of schema, in case we have drastic change
     timestamp = jsl.StringField(format="date-time", required=True)
     monkey = jsl.StringField(enum=monkeylist, required=True)
+    session_number = jsl.IntField(minimum=1, maximum=999, required=True)
     code_repo = jsl.DocumentField(schemautil.GitRepoRef, required=True)
     experiment_name = jsl.StringField(required=True, pattern=schemautil.StringPatterns.relativePathPattern)
     timing_file_name = jsl.StringField(pattern=schemautil.StringPatterns.strictFilenameLowerPattern('tm'),
@@ -85,9 +91,14 @@ class CortexExpSchema(DBSchema):
         # check that this commit is already in the remote.
         assert datasmart.core.util.git.check_commit_in_remote(self.config['repo_path'],
                                                               cortex_expt_repo_hash), 'you must push the commit first'
-
         # convert string-based timestamp to actual Python ``datetime`` object
         record['timestamp'] = datasmart.core.util.datetime.rfc3339_to_datetime(record['timestamp'])
+
+        # check that recording_id match what we obtain from timestamp and session_number
+        timestamp_local = datasmart.core.util.datetime.datetime_local_to_local(
+            datasmart.core.util.datetime.datetime_to_datetime_utc(record['timestamp']))
+        record['recording_id'] = timestamp_local.strftime('%Y%m%d') + '{:03d}'.format(record['session_number'])
+
         # check the item files, condition files, and timing files.
         file_to_check_list = [record['timing_file_name'],
                               record['condition_file_name'],
@@ -131,6 +142,11 @@ class CortexExpAction(ManualDBActionWithSchema):
         ret = self.check_file_exists(site, filelist, unique=True)
         record['recorded_files']['site'] = ret['src']
         record['recorded_files']['filelist'] = ret['filelist']
+
+        # check that session number is unique
+        with self.db_context as db_instance:
+            collection_instance = db_instance.client_instance[self.table_path[0]][self.table_path[1]]
+            assert collection_instance.count({"recording_id": record['recording_id']}) == 0, "duplicate recording id!"
 
     table_path = ('leelab', 'cortex_exp')
     config_path = ('actions', 'leelab', 'cortex_exp')

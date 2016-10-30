@@ -1,6 +1,7 @@
 {
   "schema_revision": 1,
   "timestamp": "{{timestamp}}",
+  "session_number": 1,
   "monkey": "gabby",
   "code_repo": {
     "repo_url": "{{repo_url}}",
