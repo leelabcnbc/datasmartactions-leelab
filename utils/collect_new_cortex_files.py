@@ -4,7 +4,7 @@ from sys import argv
 import os
 import hashlib
 import json
-from datasmartleelabutil.cortex_exp import files_to_ignore
+from datasmartleelabutil.cortex_exp import files_to_ignore, cortex_file_exts
 from datasmartleelabutil.git import check_git_repo_clean
 
 
@@ -13,7 +13,7 @@ def collect_cortex_files_one_case(folder, existing_dict):
     for x in files_in_folder:
         x_normalized = x.lower()
         x_ext = os.path.splitext(x_normalized)[1]
-        if x_ext in {'.itm', '.cnd', '.par', '.tm'}:
+        if x_ext in cortex_file_exts:
             # read this file, and compute its SHA1
             with open(os.path.join(folder, x), 'r', encoding='utf-8') as f:
                 # so always use windows style, in case accidentally a unix style file is there.
