@@ -7,8 +7,10 @@ import unittest
 from functools import partial
 from subprocess import CalledProcessError
 
-from jsonschema.exceptions import ValidationError
+import pytz
 
+from jsonschema.exceptions import ValidationError
+from datetime import datetime
 import datasmart.core.util.datetime
 import datasmart.core.util.git
 from datasmart.actions.leelab.cortex_exp import CortexExpAction, CortexExpSchemaJSL, monkeylist
@@ -16,6 +18,7 @@ from datasmart.core import schemautil
 from datasmart.test_util import env_util
 from datasmart.test_util import mock_util, file_util
 import datasmart.test_util
+
 
 class LeelabCortexExpAction(unittest.TestCase):
     @classmethod
@@ -56,6 +59,22 @@ class LeelabCortexExpAction(unittest.TestCase):
         correct_result['condition_file_sha1'] = self.temp_dict['condition_file_sha1']
         correct_result['item_file_sha1'] = self.temp_dict['item_file_sha1']
         correct_result['parameter_file_sha1'] = self.temp_dict['parameter_file_sha1']
+        correct_result['session_number'] = self.temp_dict['session_number']
+
+        # let's directly create timestamp
+        local_datetime = file_util.fake.date_time_between_dates(datetime_start=datetime(2000, 1, 1),
+                                                                datetime_end=datetime(2020, 1, 1))
+        # some of these hours can give different days for UTC and local time, without trouble of DST.
+        local_datetime = local_datetime.replace(hour=random.choice([10, 20, 22, 23]))
+        correct_result['recording_id'] = local_datetime.strftime('%Y%m%d') + '{:03d}'.format(
+            correct_result['session_number'])
+        # convert to UTC
+        local_datetime_withtz = datasmart.core.util.datetime.datetime_to_datetime_local(local_datetime)
+        local_datetime_rfc = datasmart.core.util.datetime.datetime_local_to_rfc3339_local(local_datetime_withtz)
+        local_datetime_utc_naive = local_datetime_withtz.astimezone(pytz.utc).replace(tzinfo=None)
+        correct_result['timestamp'] = local_datetime_utc_naive
+        correct_result['timestamp_rfc'] = local_datetime_rfc
+
         self.temp_dict['correct_result'] = correct_result
 
     def setup_cortex_exp_files(self):
@@ -80,6 +99,9 @@ class LeelabCortexExpAction(unittest.TestCase):
         with open(filelist_full[3], 'rb') as f:
             self.temp_dict['parameter_file_sha1'] = hashlib.sha1(f.read()).hexdigest()
         file_util.create_files_from_filelist(self.filelist_true, local_data_dir=self.site['prefix'])
+
+        # let's add some session number
+        self.temp_dict['session_number'] = random.randint(1, 999)
 
     def get_new_instance(self):
         # check git is clean
@@ -174,7 +196,7 @@ class LeelabCortexExpAction(unittest.TestCase):
                 self.remove_instance()
 
     def test_insert_correct_stuff(self):
-        for _ in range(20):  # used to be 100. but somehow that will make program fail for travis
+        for _ in range(10):  # used to be 100. but somehow that will make program fail for travis
             self.get_new_instance()
             self.temp_dict['wrong_type'] = 'correct'
             mock_util.run_mocked_action(self.action, {'input': self.mock_function,
@@ -186,13 +208,19 @@ class LeelabCortexExpAction(unittest.TestCase):
             correct_result = self.temp_dict['correct_result']
             # for key in correct_result: # this for loop for of assert is easy to debug.
             #     self.assertEqual(correct_result[key], result[key])
+            timestamp_rfc = correct_result['timestamp_rfc']
+            del correct_result['timestamp_rfc']
             self.assertEqual(correct_result, result)
             result['timestamp'] = datasmart.core.util.datetime.datetime_to_datetime_utc(result['timestamp'])
+            result['timestamp'] = datasmart.core.util.datetime.datetime_local_to_local(result['timestamp'])
             result['timestamp'] = datasmart.core.util.datetime.datetime_local_to_rfc3339_local(result['timestamp'])
+            print(timestamp_rfc, result['timestamp'],
+                  correct_result['timestamp'], correct_result['recording_id'])
             del result['timing_file_sha1']
             del result['item_file_sha1']
             del result['condition_file_sha1']
             del result['parameter_file_sha1']
+            del result['recording_id']
             self.assertTrue(schemautil.validate(CortexExpSchemaJSL.get_schema(), result))
             self.action.revoke()
             env_util.assert_not_found(self.__class__, [result_id])
@@ -216,8 +244,9 @@ class LeelabCortexExpAction(unittest.TestCase):
             record['additional_parameters'] = instance.temp_dict['correct_result']['additional_parameters']
             record['notes'] = instance.temp_dict['correct_result']['notes']
             record['monkey'] = instance.temp_dict['correct_result']['monkey']
-            instance.temp_dict['correct_result']['timestamp'] = datasmart.core.util.datetime.rfc3339_to_datetime(
-                record['timestamp'])
+            record['timestamp'] = instance.temp_dict['correct_result']['timestamp_rfc']
+            record['session_number'] = instance.temp_dict['correct_result']['session_number']
+
             wrong_type = instance.temp_dict['wrong_type']
             if wrong_type == 'correct':
                 pass
