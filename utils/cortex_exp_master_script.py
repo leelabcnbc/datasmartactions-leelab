@@ -3,9 +3,9 @@ from datasmart.actions.leelab.cortex_exp import CortexExpAction
 
 import os.path
 
-from cortex_exp_master_util import (check_folder_structure,
-                                    check_cortex_exp_repo_wrapper,
-                                    check_blackrock_files_all)
+from cortex_exp_master_util_step1 import check_folder_structure
+from cortex_exp_master_util_step2 import check_cortex_exp_repo_wrapper
+from cortex_exp_master_util_step3 import check_blackrock_files_all
 
 
 def generate_all_records(clean_data_site_url, clean_data_root,
