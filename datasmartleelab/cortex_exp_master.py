@@ -36,7 +36,7 @@ def generate_all_records(clean_data_site_url, clean_data_root,
     return all_records
 
 
-def cortex_exp_master_wrapper(clean_data_root, messy_data_root, clean_data_site_url):
+def cortex_exp_master_wrapper(clean_data_root, messy_data_root, clean_data_site_url, this_script_dir):
     clean_data_root = os.path.normpath(clean_data_root)
     messy_data_root = os.path.normpath(messy_data_root)
     assert os.path.isabs(clean_data_root) and os.path.isabs(messy_data_root)
@@ -44,8 +44,6 @@ def cortex_exp_master_wrapper(clean_data_root, messy_data_root, clean_data_site_
     git_repo_path = sample_action.config['cortex_expt_repo_path']
     git_repo_hash = sample_action.config['cortex_expt_repo_hash']
     git_repo_url = sample_action.config['cortex_expt_repo_url']
-    this_script_location = os.path.normpath(os.path.abspath(__file__))
-    this_script_dir = os.path.split(this_script_location)[0]
     cortex_exp_action_files = {
         sample_action.prepare_result_name,
         sample_action.query_template_name,
