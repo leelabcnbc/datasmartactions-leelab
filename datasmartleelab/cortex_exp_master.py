@@ -33,8 +33,9 @@ def generate_all_records(clean_data_site_url, clean_data_root,
     # this should be trivial.
     all_records = generate_all_records_helper(info_for_each_recording, clean_data_site_url, clean_data_root,
                                               git_repo_hash, git_repo_url)
+    assert len(all_records) == len(info_for_each_recording)
 
-    return all_records
+    return all_records, info_for_each_recording
 
 
 def cortex_exp_master_wrapper(clean_data_root, messy_data_root, clean_data_site_url, this_script_dir):
@@ -59,11 +60,11 @@ def cortex_exp_master_wrapper(clean_data_root, messy_data_root, clean_data_site_
     # generate all records induced from the folder structure.
     # TODO: allow the user to pass in some config file to restrict what to search for, saving time.
     record_filter_config = None
-    all_records = generate_all_records(clean_data_site_url, clean_data_root,
-                                       messy_data_root,
-                                       git_repo_path, git_repo_hash, git_repo_url,
-                                       record_filter_config=record_filter_config,
-                                       this_script_dir=this_script_dir)
+    all_records, info_for_each_recording = generate_all_records(clean_data_site_url, clean_data_root,
+                                                                messy_data_root,
+                                                                git_repo_path, git_repo_hash, git_repo_url,
+                                                                record_filter_config=record_filter_config,
+                                                                this_script_dir=this_script_dir)
 
     # if there are some not in the database, pick them out, and write a script to batch insert them,
     # and then quit.
@@ -83,4 +84,6 @@ def cortex_exp_master_wrapper(clean_data_root, messy_data_root, clean_data_site_
         print('execute the datasmart action, and in the end remove cortex-exp-batch.p and other action-related files')
     else:
         # otherwise, validate all inserted records are consistent with what we generate.
-        validate_inserted_records()
+        with sample_action.db_context as db_instance:
+            collection_instance = db_instance.client_instance[sample_action.table_path[0]][sample_action.table_path[1]]
+            validate_inserted_records(all_records, info_for_each_recording, collection_instance)
