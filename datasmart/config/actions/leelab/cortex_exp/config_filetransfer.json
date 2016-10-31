@@ -5,10 +5,10 @@
       "from": {
         "path": "sparrowhawk.cnbc.cmu.edu",
         "local": false,
-        "prefix": "/datasmart/leelab/raw_data"
+        "prefix": "/datasmart/leelab/raw_data/cortex_exp"
       },
       "to": {
-        "path": "/datasmart/leelab/raw_data",
+        "path": "/datasmart/leelab/raw_data/cortex_exp",
         "local": true
       }
     }
@@ -18,10 +18,10 @@
       "from": {
         "path": "sparrowhawk.cnbc.cmu.edu",
         "local": false,
-        "prefix": "/datasmart/leelab/raw_data"
+        "prefix": "/datasmart/leelab/raw_data/cortex_exp"
       },
       "to": {
-        "path": "/datasmart/leelab/raw_data",
+        "path": "/datasmart/leelab/raw_data/cortex_exp",
         "local": true
       }
     }
