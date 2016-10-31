@@ -9,4 +9,4 @@ if __name__ == '__main__':
 
     clean_data_site_url = 'sparrowhawk.cnbc.cmu.edu'
 
-    cortex_exp_master_wrapper(messy_data_root_debug, clean_data_root_debug, clean_data_site_url)
+    cortex_exp_master_wrapper(messy_data_root_deploy, clean_data_root_deploy, clean_data_site_url)
