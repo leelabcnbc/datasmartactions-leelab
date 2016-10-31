@@ -36,7 +36,11 @@ from datasmart.core import schemautil
 from datasmart.core.action import ManualDBActionWithSchema
 from datasmart.core.dbschema import DBSchema
 
-monkeylist = ["leo", "koko", "gabby", "frugo"]
+monkey_name_mapping = {
+    'leo': 'LE', 'gabby': 'GA', 'frugo': 'FR', 'koko': 'KO'
+}
+
+monkeylist = list(monkey_name_mapping.keys())
 
 
 class CortexExpSchemaJSL(jsl.Document):

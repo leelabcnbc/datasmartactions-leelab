@@ -1,0 +1,8 @@
+{
+  "url": "datasmart.cnbc.cmu.edu",
+  "port": 27017,
+  "authentication": true,
+  "user": "USER",
+  "password": "PASSWORD",
+  "auth_db": "admin"
+}

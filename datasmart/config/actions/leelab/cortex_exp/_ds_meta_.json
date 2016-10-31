@@ -1,0 +1,11 @@
+{
+  "action_name": "CortexExpAction",
+  "revocable": true,
+  "override_core_config": {
+    "db": "config_db.json",
+    "util": "config_util.json",
+    "filetransfer": "config_filetransfer.json"
+  },
+  "override_start_script": "start_script.py",
+  "additional_files": ["cortex_exp_master_script.py"]
+}
