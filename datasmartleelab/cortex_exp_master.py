@@ -1,6 +1,7 @@
 """master script for automatically creating actions to fill up cortex_exp"""
 import os.path
 from copy import deepcopy
+import pickle
 from .cortex_exp_master_util_step1 import check_folder_structure
 from .cortex_exp_master_util_step2 import check_cortex_exp_repo_wrapper
 from .cortex_exp_master_util_step3 import check_blackrock_files_all
@@ -78,7 +79,7 @@ def cortex_exp_master_wrapper(clean_data_root, messy_data_root, clean_data_site_
         # save all records in recording_id_to_insert to 'cortex-exp-batch.p'
         recordings_to_insert = [deepcopy(all_records[rec_id]) for rec_id in recording_id_to_insert]
         with open(os.path.join(this_script_dir, 'cortex-exp-batch.p'), 'wb') as f_batch_record:
-            f_batch_record.dump(recordings_to_insert, f_batch_record)
+            pickle.dump(recordings_to_insert, f_batch_record)
         print('execute the datasmart action, and in the end remove cortex-exp-batch.p and other action-related files')
     else:
         # otherwise, validate all inserted records are consistent with what we generate.
