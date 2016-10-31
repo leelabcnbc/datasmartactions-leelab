@@ -65,9 +65,9 @@ def generate_all_records_helper_notes(entry_this, x):
 def generate_all_records_helper(info_for_each_recording, clean_data_site_url, clean_data_root,
                                 git_repo_hash, git_repo_url):
     all_records_dict = OrderedDict()
-    entry_this = dict()
 
     for x in info_for_each_recording:
+        entry_this = dict()
         # generate all basic info
         generate_all_records_helper_basic_info(entry_this, x, git_repo_url, git_repo_hash)
         # generate file entry
