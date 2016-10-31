@@ -1,11 +1,11 @@
 import datetime
 import os
-from json import load
 from itertools import product
+from json import load
 
-from cortex_exp_master_util import cortex_file_exts, blackrock_file_exts, files_to_ignore
 from datasmart.actions.leelab.cortex_exp import (monkey_name_mapping,
                                                  monkeylist, )
+from .cortex_exp_master_util import cortex_file_exts, blackrock_file_exts, files_to_ignore
 
 
 def check_folder_name_struture(dirpath, data_root):
@@ -91,7 +91,8 @@ def check_one_case(x, data_root):
         'suffix_dir': os.path.join(monkey_name, exp_name, date_str, session_num_str),
         'ctx_files_dict': ctx_files_dict,
         'notes_dict': notes_dict,
-        'recording_id': recording_id
+        'recording_id': recording_id,
+        'session_number': session_num,
     }
 
 

@@ -1,0 +1,41 @@
+{
+  "local_data_dir": "_data",
+  "site_mapping_push": [
+    {
+      "from": {
+        "path": "sparrowhawk.cnbc.cmu.edu",
+        "local": false,
+        "prefix": "/datasmart/leelab/raw_data"
+      },
+      "to": {
+        "path": "/datasmart/leelab/raw_data",
+        "local": true
+      }
+    }
+  ],
+  "site_mapping_fetch": [
+    {
+      "from": {
+        "path": "sparrowhawk.cnbc.cmu.edu",
+        "local": false,
+        "prefix": "/datasmart/leelab/raw_data"
+      },
+      "to": {
+        "path": "/datasmart/leelab/raw_data",
+        "local": true
+      }
+    }
+  ],
+  "remote_site_config": {
+    "sparrowhawk.cnbc.cmu.edu": {
+      "ssh_username": "leelab",
+      "ssh_port": 22
+    }
+  },
+  "default_site": {
+    "path": "default_local_site",
+    "local": true
+  },
+  "quiet": false,
+  "local_fetch_option": "copy"
+}

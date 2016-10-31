@@ -27,7 +27,6 @@ Format of a database record for this action.
 import hashlib
 import os.path
 import re
-import datetime
 
 import jsl
 

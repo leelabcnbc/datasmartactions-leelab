@@ -1,8 +1,8 @@
-from datasmart.core.util.git import check_git_repo_clean, check_commit_in_remote
-from cortex_exp_master_util import cortex_file_exts
-
-import os
 import hashlib
+import os
+
+from .cortex_exp_master_util import cortex_file_exts
+from datasmart.core.util.git import check_git_repo_clean, check_commit_in_remote
 
 
 def copy_cortex_files_to_git(folder, existing_dict):
@@ -80,7 +80,7 @@ def collect_cortex_files_one_case_inner_readfile(f_path):
     if data_raw != data:
         data_raw_fixed = data_raw.replace(b'\n', b'\r\n')
         assert data_raw_fixed == data
-        input('{} does not have CRLF ending; press enter to ignore this, or ctrl+c to stop and fix this'.format(f_path))
+        print('{} does not have CRLF ending; may not be an issue in practice'.format(f_path))
 
     return data
 

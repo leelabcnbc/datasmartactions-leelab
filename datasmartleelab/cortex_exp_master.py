@@ -1,11 +1,13 @@
 """master script for automatically creating actions to fill up cortex_exp"""
-from datasmart.actions.leelab.cortex_exp import CortexExpAction
-
 import os.path
+from copy import deepcopy
+from .cortex_exp_master_util_step1 import check_folder_structure
+from .cortex_exp_master_util_step2 import check_cortex_exp_repo_wrapper
+from .cortex_exp_master_util_step3 import check_blackrock_files_all
+from .cortex_exp_master_util_step4 import generate_all_records_helper
+from .cortex_exp_master_util_step5 import validate_inserted_records
 
-from cortex_exp_master_util_step1 import check_folder_structure
-from cortex_exp_master_util_step2 import check_cortex_exp_repo_wrapper
-from cortex_exp_master_util_step3 import check_blackrock_files_all
+from datasmart.actions.leelab.cortex_exp import CortexExpAction
 
 
 def generate_all_records(clean_data_site_url, clean_data_root,
@@ -28,14 +30,13 @@ def generate_all_records(clean_data_site_url, clean_data_root,
 
     # fourth, generate all the cortex_records, with recording_id in it.
     # this should be trivial.
-    # all_records = generate_all_records_helper(info_for_each_recording, clean_data_site_url, clean_data_root,
-    #                                           git_repo_path, git_repo_hash, git_repo_url)
+    all_records = generate_all_records_helper(info_for_each_recording, clean_data_site_url, clean_data_root,
+                                              git_repo_hash, git_repo_url)
 
-    print({x['recording_id'] for x in info_for_each_recording})
-    print(len(info_for_each_recording))
+    return all_records
 
 
-def main(clean_data_root, messy_data_root):
+def cortex_exp_master_wrapper(clean_data_root, messy_data_root, clean_data_site_url):
     clean_data_root = os.path.normpath(clean_data_root)
     messy_data_root = os.path.normpath(messy_data_root)
     assert os.path.isabs(clean_data_root) and os.path.isabs(messy_data_root)
@@ -43,14 +44,12 @@ def main(clean_data_root, messy_data_root):
     git_repo_path = sample_action.config['cortex_expt_repo_path']
     git_repo_hash = sample_action.config['cortex_expt_repo_hash']
     git_repo_url = sample_action.config['cortex_expt_repo_url']
-    clean_data_site_url = 'sparrowhawk.cnbc.cmu.edu'
     this_script_location = os.path.normpath(os.path.abspath(__file__))
     this_script_dir = os.path.split(this_script_location)[0]
     cortex_exp_action_files = {
         sample_action.prepare_result_name,
         sample_action.query_template_name,
         'cortex-exp-batch.p',
-        'cortex-exp-batch.py'
     }
 
     for x in cortex_exp_action_files:
@@ -69,15 +68,20 @@ def main(clean_data_root, messy_data_root):
 
     # if there are some not in the database, pick them out, and write a script to batch insert them,
     # and then quit.
+    recording_id_to_insert = []
+    with sample_action.db_context as db_instance:
+        collection_instance = db_instance.client_instance[sample_action.table_path[0]][sample_action.table_path[1]]
+        for recording_id, record in all_records.items():
+            if collection_instance.count({'recording_id': recording_id}) == 0:
+                recording_id_to_insert.append(recording_id)
 
-    # otherwise, validate all inserted records are consistent with what we generate.
-
-
-if __name__ == '__main__':
-    messy_data_root_deploy = '/datasmart/leelab/raw_data_messy'
-    clean_data_root_deploy = '/datasmart/leelab/raw_data'
-
-    messy_data_root_debug = '/Users/yimengzh/Desktop/datasmart_raw_data'
-    clean_data_root_debug = '/Users/yimengzh/Desktop/datasmart_raw_data_messy'
-
-    main(messy_data_root_debug, clean_data_root_debug)
+    if recording_id_to_insert:
+        print('{} records to be inserted out of {}'.format(len(recording_id_to_insert), len(all_records)))
+        # save all records in recording_id_to_insert to 'cortex-exp-batch.p'
+        recordings_to_insert = [deepcopy(all_records[rec_id]) for rec_id in recording_id_to_insert]
+        with open(os.path.join(this_script_dir, 'cortex-exp-batch.p'), 'wb') as f_batch_record:
+            f_batch_record.dump(recordings_to_insert, f_batch_record)
+        print('execute the datasmart action, and in the end remove cortex-exp-batch.p and other action-related files')
+    else:
+        # otherwise, validate all inserted records are consistent with what we generate.
+        validate_inserted_records()
