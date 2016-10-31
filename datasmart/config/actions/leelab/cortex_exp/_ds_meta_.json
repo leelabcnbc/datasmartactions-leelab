@@ -7,5 +7,5 @@
     "filetransfer": "config_filetransfer.json"
   },
   "override_start_script": "start_script.py",
-  "additional_files": ["cortex_exp_master_script.py"]
+  "additional_files": ["cortex_exp_master_script.py", "start_cortex_exp_master_script.sh"]
 }
