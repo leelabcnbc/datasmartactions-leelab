@@ -36,7 +36,9 @@ def collect_missing_blackrock_files_wrapper(folder_list_dict, blackrock_folder):
         for file in files_to_cp:
             file_all.append(file)
             cp_lines.append('cp {} {}\n'.format(quote(file), quote(x)))
+            cp_lines.append('echo {}\n'.format(quote(file)))
             rm_lines.append('#rm {}\n'.format(quote(file)))
+            rm_lines.append('#echo {}\n'.format(quote(file)))
     collect_missing_blackrock_files_checkresult(cp_lines, rm_lines, file_all)
 
     return cp_lines, rm_lines
