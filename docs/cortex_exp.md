@@ -28,12 +28,43 @@ For Lee Lab users, simply log into `leelab@sparrowhawk.cnbc.cmu.edu`, and I have
 
 On `sparrowhawk`, all raw datas are stored under `/datasmart/leelab/raw_data/cortex_exp`, which I denote as `$ROOT` later. For each recording of monkey `banana` for a particular project `myproject` at a particular day `YYYYMMDD`, at `X`th session. We put all its data files under `$ROOT/banana/myproject/YYYYMMDD/X`. Call this `$RECORDING_ROOT`.
 
+The monkey name must be among keys of `monkey_name_mapping` in <https://github.com/leelabcnbc/datasmartactions-leelab/blob/master/datasmart/actions/leelab/cortex_exp.py>, and project name must be of lowercase. (TODO: in <https://github.com/leelabcnbc/datasmartactions-leelab/blob/master/datasmart/actions/leelab/cortex_exp.py>, actually `experiment_name` is not required to be lowercase, and this is only enforced by my master script; but I think such lowercase requirement is easier for me to write the master script; and we may also require it in the actual schema as well).
+
 under each `$RECORDING_ROOT`, put the following files.
 
-* set of `itm`, `cnd`, `par`, `tm`
-	* To be super correct, I think LUT should be included as well. But that is for future experiments. I suggest we come up with more **required** fields, and put all of them in revision 2 of `cortex_exp`. Summer suggested adding `.set`, `.blk` as well.
+* CORTEX related files. it must be one of the following. Letter case in filenames is ignored.
+	1. `.par`, `.cnd`, `.tm`, `.itm`, `.set` files (old one)
+	2. `.par`, `.cnd`, `.tm`, `.itm`, `.set`, `.lut`, `.blk` files (new one, preferred)
 * a JSON file called `note.json` that stores a dictionary (object in JSON terminolgy), including at least `notes`, `RF`, and `blocks`. Additional parmameters are accepted as well, except `data`, which has been taken by Summer to keep track of what files are used.
 	* Another reserved field might be `revision`, which can be useful to distinguish between different versions of CORTEX schema (hopefully, there won't be many).
-* set of `nev`, `ns2`, `ns6`, `ccf` files. Their names must be of form `MA_YYYY_MM_DD_00X`, where `MA` is the two letter abbreviation for the given monkey, and `00X` means `{:03d}.format(X)` (in Python syntax).
+* set of `nev`, `ns2`, `ns6`, `ccf` files. Their names must be of form `MA_YYYY_MM_DD_00X`, where `MA` is the two letter abbreviation for the given monkey, and `00X` means `{:03d}.format(X)` (in Python syntax). Other files, such as `.ns3` are allowed but ignored by the current master script.
 
-To be super exact, I allow exactly one file with of each extensions above in `$RECORDING_ROOT`.
+To be super exact, I allow exactly one file with of each extensions above in `$RECORDING_ROOT`. So you cannot have multiple `.set` files
+
+## How to import new data
+
+After uploading new data files to `/datasmart/leelab/raw_data/cortex_exp` according to the data file hierarchy above, you should do the following to put it in the database.
+
+1. First, open two terminal windows, both ssh to `leelab@sparrowhawk.cnbc.cmu.edu`. One change directory to `~/cortex-exp` (window 1), one to `~/datasmart-cortex-exp` (window 0).
+2. In window 1, run `./start_cortex_exp_master_script.sh`.
+3. There are several possibilities for running this script. Please contribute more detailed descriptions!
+	1. You just uploaded some data for a brand new experiment `XXX`, and the script complains `please create XXX folder`. This is because the `cortex-exp` git repo for tracking CORTEX files don't have the corresponding folder `XXX` to hold CORTEX files for experiment `XXX`. Just create it and rerun.
+	2. (Potentially after creating the folder) you may see that the script says your repo is not clean. This is because it automatically copies those new CORTEX files to the project folder in `cortex-exp`, and they are not committed. Switch to window 1 and commit & push them.
+	3. You may forget to push those new `cortex-exp` files, and the script will ask you to push them first.
+	4. For legacy data, it may complain that you need to run some file called `blackrock_missing.sh` under `~/datasmart-cortex-exp`. This file basically copies the missing blackrock files from `/datasmart/leelab/raw_data_messy/cortex_exp`, and optionally you can remove those copied files (commentted out in the file). Run it by `./blackrock_missing.sh` after `chmod +x` or `bash blackrock_missing.sh` should do as well.
+	5. In the end, the `./start_cortex_exp_master_script.sh` can finally exit normally, reporting how many records are missing in the base, and telling you to run the action. In this case, it will create a file called `cortex-exp-batch.p` under `~/datasmart-cortex-exp`. This file contains all the new entries that should be entered into database.
+	6. Run `./start_leelab_cortex_exp.sh`. Follow its instruction, and it will insert all those entries. I think it should run without any error. If there's any, rerun and revoke it (by pressing any key then pressing enter), and tell me immediately!
+	7. Now the new data entries should be available in the database. Check <https://github.com/leelabcnbc/datasmartactions-leelab/blob/master/datasmart/config/actions/leelab/cortex_exp/config_db.json> and you should be able to figure out how to view the database using <http://3t.io/mongochef/>.
+	8. In the end, you should remove `actions.leelab.cortex_exp.prepare_result.p`, `actions.leelab.cortex_exp.query_template.py`, and `cortex-exp-batch.p`. These files are used to prevent records from being inserted multiple times (without removing these files, running `./start_leelab_cortex_exp.sh` twice won't be harmful. Don't remove only one of them, or two of them, as that may lead to unpredictable results. Just remove all of them, or none of them.
+4. If you run the master script again, it will verify that all previously inserted records can be generated by the current program as well. This is helpful when updating the datasmart actions.
+5. During execution of master script, you may see warnings like "`leo/prediction/20160304/1/PRED.CND` does not have CRLF ending; may not be an issue in practice". This is because in theory those (text) CORTEX files should have CRLF line ending, but the particular file the warning is referring to is not. This may not be a problem in practice, as these files can run successfully. Or it's just some error in copying, or some automatic line ending detection and conversion of some FTP client.
+
+## How to import legacy data
+
+For Summer's old data to be imported into data base, you should
+
+1. Download <https://github.com/leelabcnbc/datasmartactions-leelab/blob/master/datasmartleelab/switch_date_format.py> and use it to convert all `MMDDYYYY` to `YYYYMMDD` in each project folder (which contains all folders with name `MMDDYYYY`. The script should be executed with Python 3.5, and lower version is not tested. For example, `leo/aaa` folder contains many folders of format `MMDDYYYY`, then just run `python switch_date_format.py leo/aaa` should do. (I assume your current directory contains `switch_date_format.py`.
+2. Upload the data with correct date format to `sparrowhawk.cnbc.cmu.edu:/datasmart/leelab/raw_data_no_file_original_from_summer_and_name_fixed/cortex_exp`, just for backup.
+3. Upload the same set of data to `sparrowhawk.cnbc.cmu.edu:/datasmart/leelab/raw_data/cortex_exp`
+4. Put all the blackrock files possibly missing under these folders to  `sparrowhawk.cnbc.cmu.edu:/datasmart/leelab/raw_data_messy/cortex_exp`. Each monkey should have one folder under it.
+5. Follow instruction for importing new data.
