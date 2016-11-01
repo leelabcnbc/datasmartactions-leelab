@@ -12,6 +12,7 @@
   "condition_file_name": "sp_bw.cnd",
   "item_file_name": "arr_bw.itm",
   "parameter_file_name": "arr_bw.par",
+  "set_file_name": "arr_bw.set",
   "recorded_files": {
     "site": {
       "path": "Raptor.cnbc.cmu.edU",

@@ -43,9 +43,8 @@ monkey_name_mapping = {
 monkeylist = list(monkey_name_mapping.keys())
 
 
-class CortexExpSchemaJSL(jsl.Document):
+class CortexExpSchemaJSLBase(jsl.Document):
     """class defining json schema for a database record. See top of file"""
-    schema_revision = jsl.IntField(enum=[1], required=True)  # the version of schema, in case we have drastic change
     timestamp = jsl.StringField(format="date-time", required=True)
     monkey = jsl.StringField(enum=monkeylist, required=True)
     session_number = jsl.IntField(minimum=1, maximum=999, required=True)
@@ -59,9 +58,29 @@ class CortexExpSchemaJSL(jsl.Document):
                                      required=True)
     parameter_file_name = jsl.StringField(pattern=schemautil.StringPatterns.strictFilenameLowerPattern('par'),
                                           required=True)
+    set_file_name = jsl.StringField(pattern=schemautil.StringPatterns.strictFilenameLowerPattern('set'),
+                                    required=True)
+
     recorded_files = jsl.DocumentField(schemautil.filetransfer.FileTransferSiteAndFileListRemote, required=True)
     additional_parameters = jsl.DictField(required=True)
     notes = jsl.StringField(required=True)
+
+
+class CortexExpSchemaJSLR1(CortexExpSchemaJSLBase):
+    schema_revision = jsl.IntField(enum=[1], required=True)  # the version of schema, in case we have drastic change
+
+
+class CortexExpSchemaJSLR2(CortexExpSchemaJSLBase):
+    schema_revision = jsl.IntField(enum=[2], required=True)  # the version of schema, in case we have drastic change
+    lut_file_name = jsl.StringField(pattern=schemautil.StringPatterns.strictFilenameLowerPattern('lut'),
+                                    required=True)
+    blocking_file_name = jsl.StringField(pattern=schemautil.StringPatterns.strictFilenameLowerPattern('blk'),
+                                         required=True)
+
+
+class CortexExpSchemaJSL(CortexExpSchemaJSLR1, CortexExpSchemaJSLR2):
+    class Options:
+        inheritance_mode = jsl.ONE_OF
 
 
 class CortexExpSchema(DBSchema):
@@ -102,11 +121,25 @@ class CortexExpSchema(DBSchema):
         file_to_check_list = [record['timing_file_name'],
                               record['condition_file_name'],
                               record['item_file_name'],
-                              record['parameter_file_name']]
+                              record['parameter_file_name'],
+                              record['set_file_name'],
+                              ]
         field_to_insert_list = ['timing_file_sha1',
                                 'condition_file_sha1',
                                 'item_file_sha1',
-                                'parameter_file_sha1']
+                                'parameter_file_sha1',
+                                'set_file_sha1',
+                                ]
+        if record['schema_revision'] == 2:
+            file_to_check_list += [
+                record['lut_file_name'],
+                record['blocking_file_name'],
+            ]
+            field_to_insert_list += [
+                'lut_file_sha1',
+                'blocking_file_sha1',
+            ]
+
         for file_to_check, field_to_insert in zip(file_to_check_list, field_to_insert_list):
             file_to_check_full = os.path.join(self.config['repo_path'], record['experiment_name'], file_to_check)
             assert os.path.exists(file_to_check_full), "file {} doesn't exist!".format(file_to_check_full)
