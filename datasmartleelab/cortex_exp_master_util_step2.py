@@ -1,7 +1,7 @@
 import hashlib
 import os
 
-from .cortex_exp_master_util import cortex_file_exts
+from .cortex_exp_master_util import cortex_file_exts, cortex_file_exts_text, cortex_file_exts_binary
 from datasmart.core.util.git import check_git_repo_clean, check_commit_in_remote
 
 
@@ -27,7 +27,7 @@ def augment_info(info_for_each_recording, monkey_exp_pair, cortex_file_dict_this
         if (x['monkey'], x['exp_name']) == monkey_exp_pair:
             assert 'ctx_sha1_dict' not in x
             x['ctx_sha1_dict'] = {
-                ext: cortex_file_dict_this[x['ctx_files_dict'][ext]]['sha1'] for ext in cortex_file_exts
+                ext: cortex_file_dict_this[x['ctx_files_dict'][ext]]['sha1'] for ext in x['ctx_files_dict']
                 }
 
 
@@ -71,9 +71,18 @@ def collect_cortex_files_one_case_wrapper(repo_root, data_folder_for_exp_list, e
 
 
 def collect_cortex_files_one_case_inner_readfile(f_path):
-    with open(f_path, 'r', encoding='utf-8') as f:
+    ext = os.path.splitext(f_path)[1].lower()
+    if ext in cortex_file_exts_binary:
+        openargs = {'mode': 'rb'}
+        process_func = lambda x: x.read()
+    elif ext in cortex_file_exts_text:
+        openargs = {'mode': 'r', 'encoding': 'utf-8'}
+        process_func = lambda x: x.read().replace('\n', '\r\n').encode('utf-8')
+    else:
+        raise ValueError('invalid extension {} for cortex'.format(ext))
+    with open(f_path, **openargs) as f:
         # so always use windows style, in case accidentally a unix style file is there.
-        data = f.read().replace('\n', '\r\n').encode('utf-8')
+        data = process_func(f)
     with open(f_path, 'rb') as f:
         data_raw = f.read()
 

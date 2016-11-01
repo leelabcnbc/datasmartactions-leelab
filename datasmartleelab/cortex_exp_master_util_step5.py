@@ -2,6 +2,7 @@ import pymongo.collection
 from copy import deepcopy
 from datasmart.core.util.datetime import rfc3339_to_datetime
 
+from .cortex_exp_master_util import ctx_sha1_mapping_dict
 
 def validate_inserted_records(all_records, info_for_each_recording,
                               collection_instance: pymongo.collection.Collection):
@@ -23,12 +24,9 @@ def validate_inserted_records(all_records, info_for_each_recording,
         # remove git
         del ref_doc_to_use['code_repo']
         # add all sha1
-        sha1_field_list = {'timing_file_sha1': '.tm',
-                           'condition_file_sha1': '.cnd',
-                           'item_file_sha1': '.itm',
-                           'parameter_file_sha1': '.par'}
-        for field, ext in sha1_field_list.items():
-            ref_doc_to_use[field] = ref_info['ctx_sha1_dict'][ext]
+
+        for ext, sha1_value in ref_info['ctx_sha1_dict'].items():
+            ref_doc_to_use[ctx_sha1_mapping_dict[ext]] = sha1_value
 
         # remove git and id from original doc
         del saved_doc['code_repo']
@@ -36,3 +34,4 @@ def validate_inserted_records(all_records, info_for_each_recording,
 
         if saved_doc != ref_doc_to_use:
             print(saved_doc, ref_doc_to_use)
+            raise RuntimeError('uncompatbile docs!')

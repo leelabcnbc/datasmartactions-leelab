@@ -5,7 +5,9 @@ from json import load
 
 from datasmart.actions.leelab.cortex_exp import (monkey_name_mapping,
                                                  monkeylist, )
-from .cortex_exp_master_util import cortex_file_exts, blackrock_file_exts, files_to_ignore
+from .cortex_exp_master_util import (cortex_file_exts,
+                                     blackrock_file_exts, files_to_ignore,
+                                     cortex_file_exts_r1, cortex_file_exts_r2)
 
 
 def check_folder_name_struture(dirpath, data_root):
@@ -36,8 +38,13 @@ def check_cortex_files(filenames):
         if f.lower().endswith(ext):
             assert ext not in ctx_files_dict, 'mutiple {} files!'.format(ext)
             ctx_files_dict[ext] = f.lower()
-    assert ctx_files_dict.keys() == cortex_file_exts
-    return ctx_files_dict
+    if ctx_files_dict.keys() == cortex_file_exts_r1:
+        return ctx_files_dict, 1
+    elif ctx_files_dict.keys() == cortex_file_exts_r2:
+        return ctx_files_dict, 2
+    else:
+        raise ValueError('set of cortex files {} does not matter revision 1 or 2'.format(filenames))
+
 
 
 def check_blackrock_files(filenames, dirpath, monkey_name, timestamp, session_num):
@@ -78,7 +85,7 @@ def check_one_case(x, data_root):
     # construct list of blackrock files.
     blackrock_files_list = check_blackrock_files(filenames, dirpath, monkey_name, timestamp, session_num)
     # check cortex files are good
-    ctx_files_dict = check_cortex_files(filenames)
+    ctx_files_dict, schema_revision = check_cortex_files(filenames)
 
     notes_dict = check_notes(dirpath)
 
@@ -93,6 +100,7 @@ def check_one_case(x, data_root):
         'notes_dict': notes_dict,
         'recording_id': recording_id,
         'session_number': session_num,
+        'schema_revision': schema_revision
     }
 
 

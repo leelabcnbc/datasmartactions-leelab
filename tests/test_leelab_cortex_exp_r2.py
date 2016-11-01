@@ -39,7 +39,7 @@ class LeelabCortexExpAction(unittest.TestCase):
     def get_correct_result(self):
         # create the correct result.
         correct_result = dict()
-        correct_result['schema_revision'] = 1
+        correct_result['schema_revision'] = 2
         correct_result['code_repo'] = dict()
         correct_result['code_repo']['repo_url'] = self.git_mock_info['git_url']
         correct_result['code_repo']['repo_hash'] = self.git_mock_info['git_hash']
@@ -50,7 +50,9 @@ class LeelabCortexExpAction(unittest.TestCase):
         correct_result['parameter_file_name'] = self.temp_dict['parameter_file_name']
         correct_result['item_file_name'] = self.temp_dict['item_file_name']
 
+        correct_result['lut_file_name'] = self.temp_dict['lut_file_name']
         correct_result['set_file_name'] = self.temp_dict['set_file_name']
+        correct_result['blocking_file_name'] = self.temp_dict['blocking_file_name']
 
         correct_result['recorded_files'] = dict()
         correct_result['recorded_files']['site'] = self.site
@@ -64,6 +66,8 @@ class LeelabCortexExpAction(unittest.TestCase):
         correct_result['parameter_file_sha1'] = self.temp_dict['parameter_file_sha1']
 
         correct_result['set_file_sha1'] = self.temp_dict['set_file_sha1']
+        correct_result['lut_file_sha1'] = self.temp_dict['lut_file_sha1']
+        correct_result['blocking_file_sha1'] = self.temp_dict['blocking_file_sha1']
 
         correct_result['session_number'] = self.temp_dict['session_number']
 
@@ -92,6 +96,8 @@ class LeelabCortexExpAction(unittest.TestCase):
         self.temp_dict['parameter_file_name'] = file_util.gen_filename_strict_lower() + '.par'
 
         self.temp_dict['set_file_name'] = file_util.gen_filename_strict_lower() + '.set'
+        self.temp_dict['lut_file_name'] = file_util.gen_filename_strict_lower() + '.lut'
+        self.temp_dict['blocking_file_name'] = file_util.gen_filename_strict_lower() + '.blk'
 
         filelist_full = [os.path.join(self.git_mock_info['git_repo_path'], self.temp_dict['experiment_name'], x) for x
                          in [self.temp_dict['timing_file_name'],
@@ -99,6 +105,8 @@ class LeelabCortexExpAction(unittest.TestCase):
                              self.temp_dict['item_file_name'],
                              self.temp_dict['parameter_file_name'],
                              self.temp_dict['set_file_name'],
+                             self.temp_dict['lut_file_name'],
+                             self.temp_dict['blocking_file_name'],
                              ]
                          ]
         file_util.create_files_from_filelist(filelist_full, local_data_dir='.')
@@ -110,8 +118,14 @@ class LeelabCortexExpAction(unittest.TestCase):
             self.temp_dict['item_file_sha1'] = hashlib.sha1(f.read()).hexdigest()
         with open(filelist_full[3], 'rb') as f:
             self.temp_dict['parameter_file_sha1'] = hashlib.sha1(f.read()).hexdigest()
+
         with open(filelist_full[4], 'rb') as f:
             self.temp_dict['set_file_sha1'] = hashlib.sha1(f.read()).hexdigest()
+        with open(filelist_full[5], 'rb') as f:
+            self.temp_dict['lut_file_sha1'] = hashlib.sha1(f.read()).hexdigest()
+        with open(filelist_full[6], 'rb') as f:
+            self.temp_dict['blocking_file_sha1'] = hashlib.sha1(f.read()).hexdigest()
+
         file_util.create_files_from_filelist(self.filelist_true, local_data_dir=self.site['prefix'])
 
         # let's add some session number
@@ -190,15 +204,15 @@ class LeelabCortexExpAction(unittest.TestCase):
     def test_insert_wrong_stuff(self):
         wrong_types = ['missing field', 'wrong monkey',
                        'nonexistent tm', 'nonexistent itm', 'nonexistent cnd',
-                       'nonexistent par', 'nonexistent set',
+                       'nonexistent par', 'nonexistent set', 'nonexistent lut', 'nonexistent blk',
                        'nonexistent recording files']
         exception_types = [ValidationError, ValidationError,
                            AssertionError, AssertionError, AssertionError,
-                           AssertionError, AssertionError,
-                           CalledProcessError]
+                           AssertionError, AssertionError, AssertionError,
+                           AssertionError, CalledProcessError]
         exception_msgs = [None, None,
                           ".tm doesn't exist!", ".itm doesn't exist!", ".cnd doesn't exist!", ".par doesn't exist!",
-                          ".set doesn't exist!",
+                          ".set doesn't exist!", ".lut doesn't exist!", ".blk doesn't exist!",
                           None]
 
         for wrong_type, exception_type, exception_msg in zip(wrong_types, exception_types, exception_msgs):
@@ -237,10 +251,12 @@ class LeelabCortexExpAction(unittest.TestCase):
             del result['item_file_sha1']
             del result['condition_file_sha1']
             del result['parameter_file_sha1']
+            del result['recording_id']
 
             del result['set_file_sha1']
+            del result['lut_file_sha1']
+            del result['blocking_file_sha1']
 
-            del result['recording_id']
             self.assertTrue(schemautil.validate(CortexExpSchemaJSL.get_schema(), result))
             self.action.revoke()
             env_util.assert_not_found(self.__class__, [result_id])
@@ -264,6 +280,8 @@ class LeelabCortexExpAction(unittest.TestCase):
             record['parameter_file_name'] = instance.temp_dict['correct_result']['parameter_file_name']
 
             record['set_file_name'] = instance.temp_dict['correct_result']['set_file_name']
+            record['lut_file_name'] = instance.temp_dict['correct_result']['lut_file_name']
+            record['blocking_file_name'] = instance.temp_dict['correct_result']['blocking_file_name']
 
             record['recorded_files'] = instance.temp_dict['correct_result']['recorded_files']
             record['additional_parameters'] = instance.temp_dict['correct_result']['additional_parameters']
@@ -296,6 +314,12 @@ class LeelabCortexExpAction(unittest.TestCase):
             elif wrong_type == 'nonexistent set':
                 record['set_file_name'] = file_util.gen_filename_strict_lower(
                     os.path.splitext(record['set_file_name'])[0]) + '.set'
+            elif wrong_type == 'nonexistent lut':
+                record['lut_file_name'] = file_util.gen_filename_strict_lower(
+                    os.path.splitext(record['lut_file_name'])[0]) + '.lut'
+            elif wrong_type == 'nonexistent blk':
+                record['blocking_file_name'] = file_util.gen_filename_strict_lower(
+                    os.path.splitext(record['blocking_file_name'])[0]) + '.blk'
             elif wrong_type == 'nonexistent recording files':
                 record['recorded_files']['filelist'] = instance.filelist_false
             else:
