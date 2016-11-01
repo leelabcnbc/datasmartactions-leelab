@@ -5,6 +5,8 @@ from collections import OrderedDict
 from datasmart.core.util.datetime import datetime_local_to_rfc3339_local, datetime_to_datetime_local
 import os.path
 
+from .cortex_exp_master_util import ctx_name_mapping_dict
+
 
 # class CortexExpSchemaJSL(jsl.Document):
 #     """class defining json schema for a database record. See top of file"""
@@ -26,7 +28,7 @@ import os.path
 #     additional_parameters = jsl.DictField(required=True)
 #     notes = jsl.StringField(required=True)
 def generate_all_records_helper_basic_info(entry_this, x, git_repo_url, git_repo_hash):
-    entry_this['schema_revision'] = 1
+    entry_this['schema_revision'] = x['schema_revision']
     entry_this['timestamp'] = datetime_local_to_rfc3339_local(datetime_to_datetime_local(x['timestamp']))
     entry_this['monkey'] = x['monkey']
     entry_this['session_number'] = x['session_number']
@@ -51,10 +53,8 @@ def generate_all_records_helper_blackrock_files(entry_this, x, clean_data_site_u
 
 
 def generate_all_records_helper_cortex_files(entry_this, x):
-    entry_this['timing_file_name'] = x['ctx_files_dict']['.tm']
-    entry_this['condition_file_name'] = x['ctx_files_dict']['.cnd']
-    entry_this['item_file_name'] = x['ctx_files_dict']['.itm']
-    entry_this['parameter_file_name'] = x['ctx_files_dict']['.par']
+    for ext, fname in x['ctx_files_dict'].items():
+        entry_this[ctx_name_mapping_dict[ext]] = fname
 
 
 def generate_all_records_helper_notes(entry_this, x):
