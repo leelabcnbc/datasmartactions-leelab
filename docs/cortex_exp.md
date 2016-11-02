@@ -5,6 +5,10 @@ Yimeng Zhang
 
 This documents illustrates how to efficiently use `cortex_exp` action.
 
+1. Check **Data file hierarchy** for how to put new data files on sparrowhawk.
+2. Check **How to import new data** on how to use the master script.
+3. In addition, check **How to import legacy data** if you are to import Summer's legacy data for leo, before running the master script.
+
 ## Setup
 
 For Lee Lab users, simply log into `leelab@sparrowhawk.cnbc.cmu.edu`, and I have already setup all things. Basically I have done
