@@ -72,3 +72,6 @@ For Summer's old data to be imported into data base, you should
 3. Upload the same set of data to `sparrowhawk.cnbc.cmu.edu:/datasmart/leelab/raw_data/cortex_exp`
 4. Put all the blackrock files possibly missing under these folders to  `sparrowhawk.cnbc.cmu.edu:/datasmart/leelab/raw_data_messy/cortex_exp`. Each monkey should have one folder under it.
 5. Follow instruction for importing new data.
+
+## Error handling
+error message like 'len(recording_id_list) == len(results)' can imply that date-session is not unique. For example, I have experiments named 'cg' and 'gra_12', on day 20161011, I have run both of these two experiments. If I run 'cg' first and then 'gra_12', so I have 2 sessions on that day. When I organize files generated on that day, if I miss label both experiments with session number '1', this error can be thrown because the date-session is the same for both of them which can't be real.
