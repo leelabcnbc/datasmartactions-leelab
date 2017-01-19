@@ -39,6 +39,7 @@ under each `$RECORDING_ROOT`, put the following files.
 * CORTEX related files. it must be one of the following. Letter case in filenames is ignored.
 	1. `.par`, `.cnd`, `.tm`, `.itm`, `.set` files (old one)
 	2. `.par`, `.cnd`, `.tm`, `.itm`, `.set`, `.lut`, `.blk` files (new one, preferred)
+	3. If you have difficuly achieving this, say you have 6 files, with `.blk` missing. The preferable way would be creating an empty file (using `touch` in Linux) called `dummy.blk`. `dummy` explicitly tells the purpose of this file.
 * a JSON file called `note.json` that stores a dictionary (object in JSON terminolgy), including at least `notes`, `RF`, and `blocks`. Additional parmameters are accepted as well, except `data`, which has been taken by Summer to keep track of what files are used.
 	* Another reserved field might be `revision`, which can be useful to distinguish between different versions of CORTEX schema (hopefully, there won't be many).
 * set of `nev`, `ns2`, `ns6`, `ccf` files. Their names must be of form `MA_YYYY_MM_DD_00X`, where `MA` is the two letter abbreviation for the given monkey, and `00X` means `{:03d}.format(X)` (in Python syntax). Other files, such as `.ns3` are allowed but ignored by the current master script.
