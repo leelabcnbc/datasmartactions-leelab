@@ -8,13 +8,13 @@ def collect_missing_blackrock_files_one_case(this_dir, files_that_should_exist, 
     file_to_copy_list = []
     idx_to_remove_list = []
     for file_idx, file_to_find in enumerate(files_that_should_exist):
-        if os.path.splitext(file_to_find)[1] in blackrock_file_exts_required:
-            if not os.path.exists(os.path.join(this_dir, file_to_find)):
+        if not os.path.exists(os.path.join(this_dir, file_to_find)):
+            if os.path.splitext(file_to_find)[1] in blackrock_file_exts_required:
                 file_to_copy_this = os.path.join(blackrock_folder, file_to_find)
                 assert os.path.exists(file_to_copy_this), '{} cannot be found'.format(file_to_copy_this)
                 file_to_copy_list.append(file_to_copy_this)
-        else:
-            idx_to_remove_list.append(file_idx)
+            else:
+                idx_to_remove_list.append(file_idx)
 
     # then remove those items from files_that_should_exist
     # from <http://stackoverflow.com/questions/497426/deleting-multiple-elements-from-a-list>
