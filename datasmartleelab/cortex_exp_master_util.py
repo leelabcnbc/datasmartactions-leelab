@@ -1,7 +1,10 @@
 files_to_ignore = {'.DS_Store'}  # this is hack for debugging on Mac. On Linux this is not needed
 
 # don't use set, which has unpredicatable order, and will screw up validation
-blackrock_file_exts = ('.nev', '.ns6', '.ns2', '.ccf')
+blackrock_file_exts_required = ('.nev', '.ns6', '.ns2', '.ccf')
+# these are optional.
+blackrock_file_exts_optional = ('.ns3', '.ns4', '.ns5')
+blackrock_file_exts_all = blackrock_file_exts_required + blackrock_file_exts_optional
 cortex_file_exts_text = {'.itm', '.cnd', '.par', '.tm'}
 cortex_file_exts_binary = {'.set', '.lut', '.blk'}
 cortex_file_exts = cortex_file_exts_text | cortex_file_exts_binary
