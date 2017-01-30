@@ -6,8 +6,9 @@ from json import load
 from datasmart.actions.leelab.cortex_exp import (monkey_name_mapping,
                                                  monkeylist, )
 from .cortex_exp_master_util import (cortex_file_exts,
-                                     blackrock_file_exts, files_to_ignore,
-                                     cortex_file_exts_r1, cortex_file_exts_r2)
+                                     blackrock_file_exts_all, files_to_ignore,
+                                     cortex_file_exts_r1, cortex_file_exts_r2,
+                                     )
 
 
 def check_folder_name_struture(dirpath, data_root):
@@ -46,14 +47,14 @@ def check_cortex_files(filenames):
         raise ValueError('set of cortex files {} does not matter revision 1 or 2'.format(filenames))
 
 
-
 def check_blackrock_files(filenames, dirpath, monkey_name, timestamp, session_num):
     nev_id = timestamp.strftime('%Y_%m_%d') + '_' + '{:03d}'.format(session_num)
-    blackrock_files_list = ['_'.join([monkey_name_mapping[monkey_name], nev_id]) + ext for ext in blackrock_file_exts]
+    blackrock_files_list = ['_'.join([monkey_name_mapping[monkey_name], nev_id]) + ext for ext in
+                            blackrock_file_exts_all]
 
     # check that if anything ends with blackrock_file_exts, then it must be in blackrock_files_list
     for file in filenames:
-        if os.path.splitext(file)[1] in blackrock_file_exts:
+        if os.path.splitext(file)[1] in blackrock_file_exts_all:
             assert file in blackrock_files_list, '{} should not exist under {}'.format(file, dirpath)
     return blackrock_files_list
 

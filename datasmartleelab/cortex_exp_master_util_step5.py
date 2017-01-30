@@ -4,6 +4,7 @@ from datasmart.core.util.datetime import rfc3339_to_datetime
 
 from .cortex_exp_master_util import ctx_sha1_mapping_dict
 
+
 def validate_inserted_records(all_records, info_for_each_recording,
                               collection_instance: pymongo.collection.Collection):
     assert len(all_records) == len(info_for_each_recording)

@@ -1,15 +1,26 @@
 import os
 from shlex import quote
+from .cortex_exp_master_util import blackrock_file_exts_required
 
 
 def collect_missing_blackrock_files_one_case(this_dir, files_that_should_exist, file_dict, blackrock_folder):
     # then let's construct what needs to be there.
     file_to_copy_list = []
-    for file_to_find in files_that_should_exist:
+    idx_to_remove_list = []
+    for file_idx, file_to_find in enumerate(files_that_should_exist):
         if not os.path.exists(os.path.join(this_dir, file_to_find)):
-            file_to_copy_this = os.path.join(blackrock_folder, file_to_find)
-            assert os.path.exists(file_to_copy_this), '{} cannot be found'.format(file_to_copy_this)
-            file_to_copy_list.append(file_to_copy_this)
+            if os.path.splitext(file_to_find)[1] in blackrock_file_exts_required:
+                file_to_copy_this = os.path.join(blackrock_folder, file_to_find)
+                assert os.path.exists(file_to_copy_this), '{} cannot be found'.format(file_to_copy_this)
+                file_to_copy_list.append(file_to_copy_this)
+            else:
+                idx_to_remove_list.append(file_idx)
+
+    # then remove those items from files_that_should_exist
+    # from <http://stackoverflow.com/questions/497426/deleting-multiple-elements-from-a-list>
+    for i in sorted(idx_to_remove_list, reverse=True):
+        print(files_that_should_exist[i])
+        del files_that_should_exist[i]
 
     file_dict[this_dir] = file_to_copy_list
 
