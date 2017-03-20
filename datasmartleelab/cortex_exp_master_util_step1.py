@@ -2,6 +2,7 @@ import datetime
 import os
 from itertools import product
 from json import load
+from collections import Counter
 
 from datasmart.actions.leelab.cortex_exp import (monkey_name_mapping,
                                                  monkeylist, )
@@ -113,6 +114,9 @@ def check_folder_structure(data_root, record_filter_config=None):
             result_list.append(check_one_case(x, data_root))
     # check all recording ids are unique.
     recording_id_all = {x['recording_id'] for x in result_list}
+    recording_id_all_counter = Counter([x['recording_id'] for x in result_list])
+    if len(recording_id_all) != len(result_list):
+        print('duplicate records: {}'.format([(x, recording_id_all_counter[x]) for x in recording_id_all_counter if recording_id_all_counter[x] > 1]))
     assert len(recording_id_all) == len(result_list)
     return result_list
 
