@@ -88,7 +88,7 @@ def collect_cortex_files_one_case_inner_readfile(f_path):
 
     if data_raw != data:
         data_raw_fixed = data_raw.replace(b'\n', b'\r\n')
-        assert data_raw_fixed == data
+        assert data_raw_fixed == data, "{} can't be converted between CRLF and LF perfectly".format(f_path)
         print('{} does not have CRLF ending; may not be an issue in practice'.format(f_path))
 
     return data
