@@ -66,8 +66,9 @@ def check_notes(dirpath):
     try:
         with open(json_file_path, 'r', encoding='utf-8') as f:
             note = load(f)
-    except JSONDecodeError:
+    except JSONDecodeError as e:
         print('error loading file {}'.format(json_file_path))
+        raise e
     note_new = {k: note[k] for k in (note.keys() - {'data'})}
 
     assert {'notes', 'RF', 'blocks'} <= note_new.keys()
