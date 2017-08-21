@@ -1,7 +1,7 @@
 import datetime
 import os
 from itertools import product
-from json import load
+from json import load, JSONDecodeError
 from collections import Counter
 
 from datasmart.actions.leelab.cortex_exp import (monkey_name_mapping,
