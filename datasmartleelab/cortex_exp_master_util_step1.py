@@ -26,7 +26,7 @@ def check_folder_name_struture(dirpath, data_root):
     # check monkey_name
     assert monkey_name in monkeylist, '{} is not valid monkey name'.format(monkey_name)
     # check exp name
-    assert exp_name.lower() == exp_name, '{} must be lowercase'
+    assert exp_name.lower() == exp_name, '{} must be lowercase'.format(exp_name)
     timestamp = check_folder_format_date(date_str)
     assert 1 <= session_num <= 999
 
@@ -63,8 +63,11 @@ def check_blackrock_files(filenames, dirpath, monkey_name, timestamp, session_nu
 def check_notes(dirpath):
     # check that notes are good.
     json_file_path = os.path.join(dirpath, 'note.json')
-    with open(json_file_path, 'r', encoding='utf-8') as f:
-        note = load(f)
+    try:
+        with open(json_file_path, 'r', encoding='utf-8') as f:
+            note = load(f)
+    except JSONDecodeError:
+        print('error loading file {}'.format(json_file_path))
     note_new = {k: note[k] for k in (note.keys() - {'data'})}
 
     assert {'notes', 'RF', 'blocks'} <= note_new.keys()
