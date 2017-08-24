@@ -3,7 +3,12 @@
 Oct. 31, 2016  
 Yimeng Zhang
 
-This documents illustrates how to efficiently use `cortex_exp` action.
+This document should help one upload captured data into datasmart.  
+
+#This documents illustrates how to efficiently use `cortex_exp` action.
+
+The files for each individual experiment should be in the folder /datasmart/leelab/cortex_exp/monkeyname/whateverthenameofexperiment/yyyymmdd/nn
+where "monkeyname" is the name of your monkey and "whateverthenameofexperiment" is a name WITH NO SPACES of a name of your experiment.    
 
 1. Check **Data file hierarchy** for how to put new data files on sparrowhawk.
 2. Check **How to import new data** on how to use the master script.
